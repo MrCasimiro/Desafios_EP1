@@ -55,7 +55,7 @@ public class Main {
 			}
 			printM(city);
 			System.out.println("\n");
-			int[] m = percorre(city, r1, c1, r2, c2, 0, ' ');
+			int[] m = percorre(city, r1, c1, r2, c2, 0, ' ', false);
 			
 			System.out.println("\n\n" + m[0]);
 		}
@@ -81,15 +81,14 @@ public class Main {
 	// Retorna um vetor, nesse vetor o resultado em si está na primeira posição, na segunda posição está
 	// um valor 1 ou 2 para multiplicar pela rua do método retornado
 	
-	public static int[] percorre(int[][] city, int x, int y, int x_end, int y_end, int rua, char direction) {
-		System.out.println("x: " + x + " y: " + y + " tempo rua: " + rua);
+	public static int[] percorre(int[][] city, int x, int y, int x_end, int y_end, int rua, char direction, boolean mudou) {
 		
 		if(x == x_end && y == y_end) {
 			int[] result = new int[2];
 			
 			result[0] = rua * 2;
 			result[1] = 1;
-			System.out.println(result[0]);
+			System.out.println("x: " + x + " y: " + y + " tempo rua: " + result[0]);
 			
 			return result;
 		}
@@ -101,19 +100,25 @@ public class Main {
 		
 		if(x - 1 > 0 && city[x-1][y] > 0) {
 			// verifico se tem uma rua e se ela tem valor > 0, se sim vai ter um ponto. - Norte
+			boolean aux_mudou = false;
 			
 			if(direction != 'N') {
 				norte[1] = 2;
+				aux_mudou = true;
 			}
+			
 			
 			int aux = city[x-1][y]; // Vou zerar a rua para não dar stackoverflow
 			
-			if(direction == ' ') {
-				aux = aux * 2; // Essa é a condição do ínicio, se esse if for executa será um única vez para cada possibilidade de saida do inicio
-			}
+			
 			city[x-1][y] = 0;
 			
-			int[] caminho = percorre(city, x-2, y, x_end, y_end, aux, 'N');
+			int[] caminho = percorre(city, x-2, y, x_end, y_end, aux, 'N', aux_mudou);
+			
+			if(mudou) {
+				caminho[1] = 2;
+			}
+			
 			city[x-1][y] = aux;
 			
 			norte[0] = (rua *caminho[1]) + caminho[0];
@@ -121,20 +126,25 @@ public class Main {
 		
 		if(x + 1 < city.length && city[x+1][y] > 0) {
 			// - Sul
+			boolean aux_mudou = false;
 			
 			if(direction != 'S') {
 				sul[1] = 2;
+				aux_mudou = true;
 			}
 			
 			int aux = city[x+1][y];
 			
-			if(direction == ' ') {
-				aux = aux * 2; // Essa é a condição do ínicio, se esse if for executa será um única vez para cada possibilidade de saida do inicio
-			}
+			
 			
 			city[x+1][y] = 0;
 			
-			int[] caminho = percorre(city, x+2, y, x_end, y_end, aux, 'S');
+			int[] caminho = percorre(city, x+2, y, x_end, y_end, aux, 'S', aux_mudou);
+			
+			if(mudou) {
+				caminho[1] = 2;
+			}
+			
 			city[x+1][y] = aux;
 			
 			sul[0] = (rua * caminho[1]) + caminho[0];
@@ -142,20 +152,25 @@ public class Main {
 		
 		if(y + 1 < city[0].length && city[x][y+1] > 0) {
 			// - Leste
+			boolean aux_mudou = false;
 			
 			if(direction != 'L') {
 				leste[1] = 2;
+				aux_mudou = true;
 			}
 			
 			int aux = city[x][y+1];
 			
-			if(direction == ' ') {
-				aux = aux * 2; // Essa é a condição do ínicio, se esse if for executa será um única vez para cada possibilidade de saida do inicio
-			}
+			
 			
 			city[x][y+1] = 0;
 			
-			int[] caminho = percorre(city, x, y+2, x_end, y_end, aux, 'L');
+			int[] caminho = percorre(city, x, y+2, x_end, y_end, aux, 'L', aux_mudou);
+			
+			if(mudou) {
+				caminho[1] = 2;
+			}
+			
 			city[x][y+1] = aux;
 			
 			leste[0] = (rua * caminho[1]) + caminho[0];
@@ -163,26 +178,34 @@ public class Main {
 		
 		if(y - 1 > 0 && city[x][y-1] > 0) {
 			// - Oeste
+			boolean aux_mudou = false;
 			
 			if(direction != 'O') {
 				oeste[1] = 2;
+				aux_mudou = true;
 			}
 			
 			int aux = city[x][y+1];
 			
-			if(direction == ' ') {
-				aux = aux * 2; // Essa é a condição do ínicio, se esse if for executa será um única vez para cada possibilidade de saida do inicio
-			}
+			
 			
 			city[x][y+1] = 0;
 			
-			int[] caminho = percorre(city, x, y-2, x_end, y_end, aux, 'O');
+			int[] caminho = percorre(city, x, y-2, x_end, y_end, aux, 'O', aux_mudou);
+			
+			if(mudou) {
+				caminho[1] = 2;
+			}
+			
 			city[x][y-1] = aux;
 			
 			oeste[0] = (rua * caminho[1]) + caminho[0];
 		}
 		
-		return verificaMenor(norte, sul, leste, oeste);
+		int[] result = verificaMenor(norte, sul, leste, oeste);
+		System.out.println("x: " + x + " y: " + y + " tempo rua: " + result[0]);
+		
+		return result;
 	}
 	
 	public static int[] verificaMenor(int[] norte, int[] sul, int[] leste, int[] oeste) {
