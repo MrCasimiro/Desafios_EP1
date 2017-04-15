@@ -1,3 +1,2 @@
 # Desafios_EP1
-Primeio EP da matéria de Desafios de Programação
-Referente ao desafio de número 1239.
+Pasta com os eps, separados pelos números, da matéria Desafios de Programação
