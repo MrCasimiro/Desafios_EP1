@@ -8,56 +8,110 @@ public class Main {
 	public static void main(String[] args) {
 		Scanner sc = new Scanner(System.in); 
 		
-		
+		int num_case = 1;
 		while(sc.hasNext()) {
 			min = Integer.MAX_VALUE;
 			
 			int R = sc.nextInt();
 			int C = sc.nextInt();
-			int r1 = sc.nextInt() -1; // Ajustes de parametro pois o a matriz começa do 0.
+			int r1 = sc.nextInt() -1; // Ajustes de parametro pois o a matriz come�a do 0.
 			int c1 = sc.nextInt() -1;
 			int r2 = 2*sc.nextInt() -2;
 			int c2 = 2*sc.nextInt() -2;
-			sc.nextLine();
 			
-			if(R == 0 && C == 0 && r1 == 0 && r2 == 0 && c1 == 0 && c2 == 0) {
+			if(R == 0 && C == 0 && r1 == -1 && r2 == -2 && c1 == -1 && c2 == -2) {
 				sc.close();
 				return;
 			}
 			
+			String aux = sc.nextLine();
+			
 			int[][] city = new int[(2*R)-1][(2*C)-1];
 			int n = 2*R -1;
-			boolean point = true; //quando a primeira posição da linha na matriz for ponto ou rua
 			
-			for(int j = 0; j < n; j++) {
-				int i = 0;
+			if(aux.equals("")) { // caso normal � passado uma matriz nas proximas linhas
+				//System.out.println("TESTE");
 				
-				while(i < (2*C)-1) {
-					if(point) {
-						city[j][i] = -1; // interseção ou um ponto
-						if(i == 2*C-2) {
-							break;
+				boolean point = true; //quando a primeira posi��o da linha na matriz for ponto ou rua
+				
+				for(int j = 0; j < n; j++) {
+					int i = 0;
+					
+					while(i < (2*C)-1) {
+						if(point) {
+							city[j][i] = -1; // interse��o ou um ponto
+							if(i == 2*C-2) {
+								break;
+							}
+							city[j][++i] = sc.nextInt();
+						} else {
+							city[j][i] = sc.nextInt();
+							if(i == 2*C-2) {
+								break;
+							}
+							city[j][++i] = -1;
 						}
-						city[j][++i] = sc.nextInt();
-					} else {
-						city[j][i] = sc.nextInt();
-						if(i == 2*C-2) {
-							break;
-						}
-						city[j][++i] = -1;
+						
+						i++;
+						
 					}
 					
-					i++;
+					point = !point;
+				}
+				sc.nextLine();
+				
+			} else { // o resto da matriz est� no aux
+				//System.out.println(aux);
+				String[] valores = aux.split("  ");
+				
+				boolean point = true; //quando a primeira posi��o da linha na matriz for ponto ou rua
+				int k = 1;
+				for(int j = 0; j < n; j++) {
+					int i = 0;
 					
+					while(i < (2*C)-1) {
+						if(point) {
+							city[j][i] = -1; // interse��o ou um ponto
+							if(i == 2*C-2) {
+								break;
+							}
+							city[j][++i] = Integer.parseInt(valores[k]);
+							k++;
+						} else {
+							city[j][i] = Integer.parseInt(valores[k]);
+							k++;
+							if(i == 2*C-2) {
+								break;
+							}
+							city[j][++i] = -1;
+						}
+						
+						i++;
+						
+					}
+					
+					point = !point;
 				}
 				
-				point = !point;
 			}
-			printM(city);
-			System.out.println("\n");
-			int[] m = percorre(city, r1, c1, r2, c2, 0, ' ');
 			
-			System.out.println("\n\n" + m[0]);
+			
+			
+			//printM(city);
+			//System.out.println("\n");
+			int teste = Integer.MAX_VALUE;
+			int[] m = percorre(city, r1, c1, r2, c2, 0, ' ', false);
+			String resp = "";
+			
+			if(m[0] == teste) {
+				resp = "Impossible";
+			} else {
+				resp = "" + m[0];
+			}
+			
+			System.out.println("Case " + num_case + ": " + resp);
+			//System.out.println("\n\n" + m[0]);
+			num_case++;
 		}
 	}
 	
@@ -78,18 +132,17 @@ public class Main {
 		}
 	}
 	
-	// Retorna um vetor, nesse vetor o resultado em si está na primeira posição, na segunda posição está
-	// um valor 1 ou 2 para multiplicar pela rua do método retornado
+	// Retorna um vetor, nesse vetor o resultado em si est� na primeira posi��o, na segunda posi��o est�
+	// um valor 1 ou 2 para multiplicar pela rua do m�todo retornado
 	
-	public static int[] percorre(int[][] city, int x, int y, int x_end, int y_end, int rua, char direction) {
-		System.out.println("x: " + x + " y: " + y + " tempo rua: " + rua);
+	public static int[] percorre(int[][] city, int x, int y, int x_end, int y_end, int rua, char direction, boolean mudou) {
 		
 		if(x == x_end && y == y_end) {
 			int[] result = new int[2];
 			
 			result[0] = rua * 2;
 			result[1] = 1;
-			System.out.println(result[0]);
+			//System.out.println("x: " + x + " y: " + y + " tempo rua: " + result[0]);
 			
 			return result;
 		}
@@ -101,19 +154,25 @@ public class Main {
 		
 		if(x - 1 > 0 && city[x-1][y] > 0) {
 			// verifico se tem uma rua e se ela tem valor > 0, se sim vai ter um ponto. - Norte
+			boolean aux_mudou = false;
 			
 			if(direction != 'N') {
 				norte[1] = 2;
+				aux_mudou = true;
 			}
 			
-			int aux = city[x-1][y]; // Vou zerar a rua para não dar stackoverflow
 			
-			if(direction == ' ') {
-				aux = aux * 2; // Essa é a condição do ínicio, se esse if for executa será um única vez para cada possibilidade de saida do inicio
-			}
+			int aux = city[x-1][y]; // Vou zerar a rua para n�o dar stackoverflow
+			
+			
 			city[x-1][y] = 0;
 			
-			int[] caminho = percorre(city, x-2, y, x_end, y_end, aux, 'N');
+			int[] caminho = percorre(city, x-2, y, x_end, y_end, aux, 'N', aux_mudou);
+			
+			if(mudou) {
+				caminho[1] = 2;
+			}
+			
 			city[x-1][y] = aux;
 			
 			norte[0] = (rua *caminho[1]) + caminho[0];
@@ -121,20 +180,25 @@ public class Main {
 		
 		if(x + 1 < city.length && city[x+1][y] > 0) {
 			// - Sul
+			boolean aux_mudou = false;
 			
 			if(direction != 'S') {
 				sul[1] = 2;
+				aux_mudou = true;
 			}
 			
 			int aux = city[x+1][y];
 			
-			if(direction == ' ') {
-				aux = aux * 2; // Essa é a condição do ínicio, se esse if for executa será um única vez para cada possibilidade de saida do inicio
-			}
+			
 			
 			city[x+1][y] = 0;
 			
-			int[] caminho = percorre(city, x+2, y, x_end, y_end, aux, 'S');
+			int[] caminho = percorre(city, x+2, y, x_end, y_end, aux, 'S', aux_mudou);
+			
+			if(mudou) {
+				caminho[1] = 2;
+			}
+			
 			city[x+1][y] = aux;
 			
 			sul[0] = (rua * caminho[1]) + caminho[0];
@@ -142,20 +206,25 @@ public class Main {
 		
 		if(y + 1 < city[0].length && city[x][y+1] > 0) {
 			// - Leste
+			boolean aux_mudou = false;
 			
 			if(direction != 'L') {
 				leste[1] = 2;
+				aux_mudou = true;
 			}
 			
 			int aux = city[x][y+1];
 			
-			if(direction == ' ') {
-				aux = aux * 2; // Essa é a condição do ínicio, se esse if for executa será um única vez para cada possibilidade de saida do inicio
-			}
+			
 			
 			city[x][y+1] = 0;
 			
-			int[] caminho = percorre(city, x, y+2, x_end, y_end, aux, 'L');
+			int[] caminho = percorre(city, x, y+2, x_end, y_end, aux, 'L', aux_mudou);
+			
+			if(mudou) {
+				caminho[1] = 2;
+			}
+			
 			city[x][y+1] = aux;
 			
 			leste[0] = (rua * caminho[1]) + caminho[0];
@@ -163,26 +232,34 @@ public class Main {
 		
 		if(y - 1 > 0 && city[x][y-1] > 0) {
 			// - Oeste
+			boolean aux_mudou = false;
 			
 			if(direction != 'O') {
 				oeste[1] = 2;
+				aux_mudou = true;
 			}
 			
 			int aux = city[x][y+1];
 			
-			if(direction == ' ') {
-				aux = aux * 2; // Essa é a condição do ínicio, se esse if for executa será um única vez para cada possibilidade de saida do inicio
-			}
+			
 			
 			city[x][y+1] = 0;
 			
-			int[] caminho = percorre(city, x, y-2, x_end, y_end, aux, 'O');
+			int[] caminho = percorre(city, x, y-2, x_end, y_end, aux, 'O', aux_mudou);
+			
+			if(mudou) {
+				caminho[1] = 2;
+			}
+			
 			city[x][y-1] = aux;
 			
 			oeste[0] = (rua * caminho[1]) + caminho[0];
 		}
 		
-		return verificaMenor(norte, sul, leste, oeste);
+		int[] result = verificaMenor(norte, sul, leste, oeste);
+		//System.out.println("x: " + x + " y: " + y + " tempo rua: " + result[0]);
+		
+		return result;
 	}
 	
 	public static int[] verificaMenor(int[] norte, int[] sul, int[] leste, int[] oeste) {
@@ -198,93 +275,4 @@ public class Main {
 		}
 		
 	}
-	
-	//o boolean é pra dobrar a velocidade depois de uma mudança de direção
-	
-	/*
-	public static int percorre(int[][] city, int x, int y, int x_end, int y_end, int aresta, char direction, boolean mudou) {
-		System.out.println("x: " + x + " y: " + y + " total: " +aresta);
-		if(x == x_end && y == y_end) {
-			
-			System.out.println(aresta*2);
-			return aresta*2;
-		}
-		
-		int norte = Integer.MAX_VALUE;
-		int sul = Integer.MAX_VALUE;
-		int leste = Integer.MAX_VALUE;
-		int oeste = Integer.MAX_VALUE;
-		
-		
-		 //Ordem das direções: Norte - Sul - Leste - Oeste
-		 
-		
-		if(x-1 > 0 && city[x-1][y] != 0) {
-			int time = aresta;
-			boolean aux_m = false;
-			
-			
-			 //FAZER MUDANÇA NESSE MÉTODO PARA QUE ELE FAÇA O CALCULO DE MUDANÇA APÓS PASSAR PELA ARESTA
-			 
-			
-			
-			
-			
-		}
-		
-		if(x+1 < city.length && city[x+1][y] != 0) {
-			int time = total;
-			boolean aux_m = false;
-			
-			if(direction == 'S') {
-				time = time + city[x+1][y];
-			} else if(direction != 'S' || (x+2 == x_end && y == y_end) || mudou) { // Se ele for chegar ao fim o tempo será dobrado tb
-				time = time + 2*city[x+1][y];
-				if(direction != 'S') 
-					aux_m = true;
-			}
-			
-			int aux = city[x+1][y];
-			city[x+1][y] = 0;
-			percorre(city, x+2, y, x_end, y_end, time, 'S', aux_m);
-			city[x+1][y] = aux;
-		}
-		
-		if(y+1 < city[0].length && city[x][y+1] != 0) {
-			int time = total;
-			boolean aux_m = false;
-			
-			if(direction == 'L') {
-				time = time + city[x][y+1];
-			} else if(direction != 'L' || (x == x_end && y+2 == y_end) || mudou) { // Se ele for chegar ao fim o tempo será dobrado tb
-				time = time + 2*city[x][y+1];
-				if(direction != 'L')
-					aux_m = true;
-			}
-			
-			int aux = city[x][y+1];
-			city[x][y+1] = 0;
-			percorre(city, x, y+2, x_end, y_end, time, 'L', aux_m);
-			city[x][y+1] = aux;
-		}
-		
-		if(y-1 > 0 && city[x][y-1] != 0) {
-			int time = total;
-			boolean aux_m = false;
-			
-			if(direction == 'O') {
-				time = time + city[x][y-1];
-			} else if(direction != 'O' || (x == x_end && y-2 == y_end) || mudou) { // Se ele for chegar ao fim o tempo será dobrado tb
-				time = time + 2*city[x][y-2];
-				if(direction != 'O')
-					aux_m = true;
-			}
-			
-			int aux = city[x][y-1];
-			city[x][y-1] = 0;
-			percorre(city, x, y-2, x_end, y_end, time, 'O', aux_m);
-			city[x][y-1] = aux;
-		}
-	} 
-	*/
 }
